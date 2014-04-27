@@ -1,4 +1,4 @@
 The-Library
 ===========
 
-Implementation of a library.
+Implementation of a library. It has been made only for a linux terminal.
