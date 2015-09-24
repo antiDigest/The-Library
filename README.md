@@ -9,10 +9,8 @@ What you can do:
 
 2. Return a book.
 
-3. Sign Up
+3. Log In
 
-4. Log In
+4. Mark a book "read".
 
-5. Mark a book "read".
-
-6. Search books.
+5. Search books.
