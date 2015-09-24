@@ -1,4 +1,7 @@
-all: Library
+all: library
 
-Library: Library.c password.c header.h
-	gcc -g Library.c password.c
+library: library.cpp
+	g++ -g library.cpp
+
+header: header.h
+	g++ -g header.h
