@@ -8,8 +8,12 @@
 #include <cmath>
 #include <termios.h>
 #include <unistd.h>
-// #include "header.h"
-// #include "password.h"
+#include "mysql_connection.h"
+
+#include <cppconn/driver.h>
+#include <cppconn/exception.h>
+#include <cppconn/resultset.h>
+#include <cppconn/statement.h>
 
 using namespace std;
 
@@ -19,11 +23,15 @@ using namespace std;
 #define LOGIN_FAIL "Sorry, those login credentials do not match any !\n\n"
 #define LOGIN_ACCEPT "Login credentials accepted !\nWelcome "
 
+sql::Connection *con;
+
 class login
 {
 	string pass;
 public:
 	string user;
+	sql::Statement *stmt;
+	sql::ResultSet *res;
 	login(){
 		cout<<"Please Login\n";
 		printf("Username : ");
@@ -36,28 +44,17 @@ public:
 		cout<<LOGIN_ACCEPT;
 	}
 	int check(string name, string pass){
-		ifstream file(LOGIN_FILE);
-
-		string line;
-
-		while(getline(file,line)){
-			istringstream line_stream(line);
-			string user;
-
-			if(!line.find(name)){
-				int i=0, flag=0;
-				while(getline(line_stream,user,' ')){
-					if(i==0 && user.compare(name)==0){
-						// cout<<user<<name<<endl;
-						flag=1;
-					}
-					if(i==1 && user.compare(pass)==0 && flag==1){
-						// cout<<user<<pass<<endl;
-						return 1;
-					}
-					i++;
-				}
-			}	
+		int flag = 0;
+		stmt = con->createStatement();
+		res = stmt->executeQuery("SELECT * from login"); // replace with your statement
+		while (res->next()) {
+			if(name.compare(res->getString("username"))==0 && pass.compare(res->getString("password"))==0){
+				flag =1;
+				break;
+			}
+		}
+		if (flag==1){
+			return 1;
 		}
 		return 0;
 	}
@@ -65,19 +62,57 @@ public:
 
 class book{
 public:
+	string name;
+	sql::Statement *stmt;
+	sql::ResultSet *res;
+
 	book(){
-		cout<<"Books managed here !";
+		cout<<"Books managed here !\n";
+		stmt = con->createStatement();
+		
 	}
-	int issue(){
-		cout<<"Issued";
+	void issue(){
+		string bookname;
+		string issued;
+		char enter;
+		int flag=0;
+		cout<<"Enter a book : ";
+		cin>>name;
+		res = stmt->executeQuery("SELECT * from Books"); // replace with your statement
+		while (res->next()) {
+			bookname = res->getString("name");
+			issued = res->getString("Issued");
+			if(bookname.find(name)==0){
+				cout << bookname;
+				cout << "Do you want to issue this book ?(y/n) : ";
+				cin >> enter;
+				if(issued!="1"){
+					if(enter=='y'){
+						sql::Statement *query;
+						query->executeQuery("UPDATE Books SET Issued='1' where Books.name='%s' ",bookname);
+						delete query;
+						flag=1;
+					}
+				}					
+				else{
+					cout<<"Book has already been issued to someone else";
+					flag=0;
+				}
+			}
+			if(flag==1)
+				break;
+		}
 	}
-	int ret(){
+	void ret(){
 		cout<<"Returned";
 	}
-	int search(){
+	void search(){
 		cout<<"Searched";
 	}
-	~book(){}
+	~book(){
+		delete res;
+		delete stmt;
+	}
 };
 
 class library
@@ -117,8 +152,28 @@ public:
 };
 
 int main(){
-	printf("\n\n\t\tWelcome to the Library !\n\n");	
-	library start;
+	printf("\n\n\t\tWelcome to the Library !\n\n");
+	try {
+		sql::Driver *driver;
+
+		/* Create a connection */
+		driver = get_driver_instance();
+		con = driver->connect("tcp://127.0.0.1:3306", "root", "tribble");
+		con->setSchema("library"); // connect with database
+
+		library start;
+
+		delete con;
+	}
+	catch (sql::SQLException &e) {
+		cout << "# ERR: SQLException in " << __FILE__;
+		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+		cout << "# ERR: " << e.what();
+		cout << " (MySQL error code: " << e.getErrorCode();
+		cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+	}
+
+
 	printf("\n\n\t   THANK YOU for using the software...\n\n\t\t\tBYE-BYE !\n\n");
 	return 0;
 }
