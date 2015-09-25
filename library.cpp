@@ -17,6 +17,12 @@
 
 using namespace std;
 
+#define GRN  "\x1B[32m"
+#define YEL  "\x1B[33m"
+#define NRM  "\x1B[0m"
+#define RED  "\x1B[31m"
+#define BLU  "\x1B[34m"
+
 #define LOGIN_FILE ("login_info.txt")
 #define BOOKS ("books.txt")
 
@@ -39,9 +45,10 @@ public:
 		pass = getpass("Password : ");
 		// cout<<pass;
 		if(!check(user,pass)){
-			cout<<LOGIN_FAIL;
+			cout << RED << LOGIN_FAIL << NRM;
+			exit(0);
 		}
-		cout<<LOGIN_ACCEPT;
+		cout << GRN << LOGIN_ACCEPT << NRM;
 	}
 	int check(string name, string pass){
 		int flag = 0;
@@ -84,18 +91,18 @@ public:
 			issued = res->getString("Issued");
 			if(bookname.find(name)==0){
 				cout << bookname;
-				cout << "Do you want to issue this book ?(y/n) : ";
+				cout << "\nDo you want to issue this book ?(y/n) : ";
 				cin >> enter;
 				if(issued!="1"){
 					if(enter=='y'){
-						sql::Statement *query;
-						query->executeQuery("UPDATE Books SET Issued='1' where Books.name='%s' ",bookname);
-						delete query;
+						// sql::Statement *query;
+						// query->executeQuery("UPDATE Books SET Issued='1' where Books.name='%s' ",bookname);
+						// delete query;
 						flag=1;
 					}
 				}					
 				else{
-					cout<<"Book has already been issued to someone else";
+					cout << RED << "\nBook has already been issued to someone else" << NRM;
 					flag=0;
 				}
 			}
@@ -104,7 +111,36 @@ public:
 		}
 	}
 	void ret(){
-		cout<<"Returned";
+		string bookname;
+		string issued;
+		char enter;
+		int flag=0;
+		cout<<"Enter a book : ";
+		cin>>name;
+		res = stmt->executeQuery("SELECT * from userbooks"); // replace with your statement
+		while (res->next()) {
+			bookname = res->getString("name");
+			issued = res->getString("Issued");
+			if(bookname.find(name)==0){
+				cout << bookname;
+				cout << "\nDo you want to return this book ?(y/n) : ";
+				cin >> enter;
+				if(issued!="1"){
+					if(enter=='y'){
+						// sql::Statement *query;
+						// query->executeQuery("UPDATE Books SET Issued='1' where Books.name='%s' ",bookname);
+						// delete query;
+						flag=1;
+					}
+				}					
+				else{
+					cout << RED << "\nBook has already been issued to someone else" << NRM;
+					flag=0;
+				}
+			}
+			if(flag==1)
+				break;
+		}
 	}
 	void search(){
 		cout<<"Searched";
