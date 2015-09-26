@@ -17,11 +17,14 @@
 
 using namespace std;
 
-#define GRN  "\x1B[32m"
-#define YEL  "\x1B[33m"
 #define NRM  "\x1B[0m"
 #define RED  "\x1B[31m"
+#define GRN  "\x1B[32m"
+#define YEL  "\x1B[33m"
 #define BLU  "\x1B[34m"
+#define MAG  "\x1B[35m"
+#define CYN  "\x1B[36m"
+#define WHT  "\x1B[37m"
 
 #define LOGIN_FILE ("login_info.txt")
 #define BOOKS ("books.txt")
@@ -74,9 +77,8 @@ public:
 	sql::ResultSet *res;
 
 	book(){
-		cout<<"Books managed here !\n";
+		// cout<<"Books managed here !\n";
 		stmt = con->createStatement();
-		
 	}
 	void issue(){
 		string bookname;
@@ -91,19 +93,23 @@ public:
 			issued = res->getString("Issued");
 			if(bookname.find(name)==0){
 				cout << bookname;
-				cout << "\nDo you want to issue this book ?(y/n) : ";
-				cin >> enter;
+				
 				if(issued!="1"){
+					cout << "\nDo you want to issue this book ?(y/n) : ";
+					cin >> enter;
 					if(enter=='y'){
-						// sql::Statement *query;
-						// query->executeQuery("UPDATE Books SET Issued='1' where Books.name='%s' ",bookname);
-						// delete query;
+						ostringstream strstr;
+						strstr << "UPDATE Books SET Issued='1' where Books.name='" << bookname << "'";
+						string str = strstr.str();
+						stmt->executeQuery(str);
+						cout << BLU << "Book Issued !" << NRM;
 						flag=1;
 					}
 				}					
 				else{
 					cout << RED << "\nBook has already been issued to someone else" << NRM;
 					flag=0;
+					continue;
 				}
 			}
 			if(flag==1)
@@ -119,23 +125,34 @@ public:
 		cin>>name;
 		res = stmt->executeQuery("SELECT * from userbooks"); // replace with your statement
 		while (res->next()) {
-			bookname = res->getString("name");
-			issued = res->getString("Issued");
+			book_id = res->getString("book_id");
+			user_id = res->getString("user_id");
+			// ostringstream strstr;
+			// strstr << "SELECT * from Books WHERE book_id='" << book_id << "'";
+			// string str = strstr.str();
+			// book = stmt->execute(str);
+			// ostringstream strstr;
+			// strstr << "SELECT * from login WHERE user_id='" << user_id << "'";
+			// string str = strstr.str();
+			// user = stmt->execute(str);
 			if(bookname.find(name)==0){
 				cout << bookname;
-				cout << "\nDo you want to return this book ?(y/n) : ";
-				cin >> enter;
-				if(issued!="1"){
+				if(issued=="1"){
+					cout << "\nDo you want to return this book ?(y/n) : ";
+					cin >> enter;	
 					if(enter=='y'){
-						// sql::Statement *query;
-						// query->executeQuery("UPDATE Books SET Issued='1' where Books.name='%s' ",bookname);
-						// delete query;
+						ostringstream strstr;
+						strstr << "UPDATE Books SET Issued='1' where Books.name='" << bookname << "'";
+						string str = strstr.str();
+						stmt->execute(str);
+						cout << GRN << "Book Issued !" << NRM;
 						flag=1;
 					}
 				}					
 				else{
-					cout << RED << "\nBook has already been issued to someone else" << NRM;
+					cout << RED << "\nBook has not been issued to you" << NRM;
 					flag=0;
+					continue;
 				}
 			}
 			if(flag==1)
@@ -143,7 +160,16 @@ public:
 		}
 	}
 	void search(){
-		cout<<"Searched";
+		string bookname;
+		cout<<"Enter a keyword : ";
+		cin>>name;
+		res = stmt->executeQuery("SELECT * from userbooks"); // replace with your statement
+		while (res->next()) {
+			bookname = res->getString("name");
+			if(bookname.find(name)==0){
+				cout << bookname;
+			}
+		}
 	}
 	~book(){
 		delete res;
@@ -160,8 +186,9 @@ public:
 		cout<<user.user;
 		while(1){
 			cout<<"\n\nThis Software allows you to :\n1. Issue a book.\n2. Return a book.\n3. Search books.\n4. Log Out\n\n";
-			cout<<"Select from the above : ";
+			cout<<"Select from the above : " << BLU	<< BLU;
 			cin>>value;
+			cout << NRM;
 			book book;
 			switch(value){
 				case 1:
@@ -175,10 +202,11 @@ public:
 					break;
 				}
 				case 4:{
+					printf("\n\n\t   THANK YOU for using the software...\n\n\t\t\tBYE-BYE !\n\n");
 					exit(0);
 				}
 				default:
-					cout<<"Sorry, wrong input !";
+					cout<<RED<<"Sorry, wrong input !"<<NRM;
 					break;
 					
 			}	
@@ -210,6 +238,6 @@ int main(){
 	}
 
 
-	printf("\n\n\t   THANK YOU for using the software...\n\n\t\t\tBYE-BYE !\n\n");
+	
 	return 0;
 }
