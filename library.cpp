@@ -125,16 +125,16 @@ public:
 		cin>>name;
 		res = stmt->executeQuery("SELECT * from userbooks"); // replace with your statement
 		while (res->next()) {
-			book_id = res->getString("book_id");
-			user_id = res->getString("user_id");
-			// ostringstream strstr;
-			// strstr << "SELECT * from Books WHERE book_id='" << book_id << "'";
-			// string str = strstr.str();
-			// book = stmt->execute(str);
-			// ostringstream strstr;
-			// strstr << "SELECT * from login WHERE user_id='" << user_id << "'";
-			// string str = strstr.str();
-			// user = stmt->execute(str);
+			string book_id = res->getString("book_id");
+			string user_id = res->getString("user_id");
+			ostringstream strstr;
+			strstr << "SELECT * from Books WHERE book_id='" << book_id << "'";
+			string str = strstr.str();
+			book = stmt->executeQuery(str);
+			ostringstream strstr;
+			strstr << "SELECT * from login WHERE user_id='" << user_id << "'";
+			string str = strstr.str();
+			user = stmt->executeQuery(str);
 			if(bookname.find(name)==0){
 				cout << bookname;
 				if(issued=="1"){
@@ -217,7 +217,7 @@ public:
 
 int main(){
 	printf("\n\n\t\tWelcome to the Library !\n\n");
-	try {
+	// try {
 		sql::Driver *driver;
 
 		/* Create a connection */
@@ -228,14 +228,14 @@ int main(){
 		library start;
 
 		delete con;
-	}
+	/*}
 	catch (sql::SQLException &e) {
 		cout << "# ERR: SQLException in " << __FILE__;
 		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
 		cout << "# ERR: " << e.what();
 		cout << " (MySQL error code: " << e.getErrorCode();
 		cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-	}
+	}*/
 
 
 	
